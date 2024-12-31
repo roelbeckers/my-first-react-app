@@ -242,7 +242,7 @@ function App() {
               <h2 className="text-2xl font-bold text-purple-900 mb-4">Click to receive your guidance card</h2>
               <div 
                 onClick={!isLoading ? handleCardSelect : undefined}
-                className="relative w-[300px] h-[450px] perspective-1000 cursor-pointer"
+                className="relative w-[300px] h-[520px] perspective-1000 cursor-pointer"
               >
                 <div 
                   className={`
@@ -293,7 +293,7 @@ function App() {
               <img
                 src={selectedCard.image}
                 alt={selectedCard.altText}
-                className="w-[300px] h-[450px] object-cover rounded-lg shadow-lg mx-auto"
+                className="w-[300px] h-[520px] object-cover rounded-lg shadow-lg mx-auto"
               />
               <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow">
                 {renderInterpretation()}
