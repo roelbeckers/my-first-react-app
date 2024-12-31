@@ -1,0 +1,31 @@
+{
+    "welcome": {
+      "title": "Welkom bij Tarot Guidance",
+      "namePlaceholder": "Voer je naam in",
+      "continue": "Doorgaan"
+    },
+    "thoughts": {
+      "title": "Hallo, {{name}}",
+      "subtitle": "Vertel me wat er in je gedachten speelt",
+      "placeholder": "Deel je gedachten...",
+      "continue": "Doorgaan"
+    },
+    "cardSelection": {
+      "title": "Klik om je begeleiding te ontvangen",
+      "loading": "Begeleiding ontvangen..."
+    },
+    "reading": {
+      "startOver": "Opnieuw beginnen"
+    },
+    "errors": {
+      "enterName": "Voer je naam in",
+      "shareThoughts": "Deel je gedachten",
+      "interpretation": "Kon kaart interpretatie niet ophalen"
+    },
+    "language": {
+      "select": "Kies taal",
+      "en": "English",
+      "fr": "Français",
+      "nl": "Nederlands"
+    }
+  }

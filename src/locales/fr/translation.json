@@ -1,0 +1,31 @@
+{
+    "welcome": {
+      "title": "Bienvenue à Tarot Guidance",
+      "namePlaceholder": "Entrez votre nom",
+      "continue": "Continuer"
+    },
+    "thoughts": {
+      "title": "Bonjour, {{name}}",
+      "subtitle": "Dites-moi ce qui occupe votre esprit",
+      "placeholder": "Partagez vos pensées...",
+      "continue": "Continuer"
+    },
+    "cardSelection": {
+      "title": "Cliquez pour recevoir votre carte de guidance",
+      "loading": "Réception de la guidance..."
+    },
+    "reading": {
+      "startOver": "Recommencer"
+    },
+    "errors": {
+      "enterName": "Veuillez entrer votre nom",
+      "shareThoughts": "Veuillez partager vos pensées",
+      "interpretation": "Échec de l'interprétation de la carte"
+    },
+    "language": {
+      "select": "Choisir la langue",
+      "en": "English",
+      "fr": "Français",
+      "nl": "Nederlands"
+    }
+  }

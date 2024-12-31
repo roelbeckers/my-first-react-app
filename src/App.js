@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import tarotCards from './tarotData';
+import { useTranslation } from 'react-i18next';
+import './i18n'; // Import the i18n configuration
+import LanguageSelector from './components/LanguageSelector';
 
 function App() {
+  const { t, i18n } = useTranslation();
   const [step, setStep] = useState(1);
   const [userName, setUserName] = useState('');
   const [userThoughts, setUserThoughts] = useState('');
@@ -43,7 +47,7 @@ function App() {
   Keywords: ${card.keywords.join(', ')}
   Seeker's Current Situation: "${userThoughts}"
   
-  Please provide a thorough interpretation that includes:
+  Please provide a thorough interpretation in ${i18n.language === 'nl' ? 'Dutch' : i18n.language === 'fr' ? 'French' : 'English'} that includes:
   
   1. Initial Insight (2-3 sentences):
   - Acknowledge the seeker's current situation
@@ -96,7 +100,8 @@ function App() {
         }
       });
   
-      const prompt = selectPromptTemplate(userThoughts, card);
+      //const { i18n } = useTranslation();
+      const prompt = selectPromptTemplate(userThoughts, card, i18n.language);
   
       const input = {
         modelId: "anthropic.claude-3-haiku-20240307-v1:0",
@@ -122,7 +127,7 @@ function App() {
       return interpretation;
     } catch (error) {
       console.error('Error:', error);
-      throw new Error('Failed to get card interpretation');
+      throw new Error(t('errors.interpretation'));
     }
   };
 
@@ -191,15 +196,17 @@ function App() {
   };
 
   const renderStep = () => {
+    //const { t } = useTranslation();
+
     switch (step) {
       case 1:
         return (
           <div className="flex flex-col items-center space-y-4">
-            <h2 className="text-3xl font-bold text-purple-900">Welcome to Tarot Guidance</h2>
+            <h2 className="text-3xl font-bold text-purple-900">{t('welcome.title')}</h2>
             <form onSubmit={handleNameSubmit} className="flex flex-col items-center space-y-4">
               <input
                 type="text"
-                placeholder="Enter your name"
+                placeholder={t('welcome.namePlaceholder')}
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 className="text-xl text-center w-64 h-12 border rounded-lg px-4"
@@ -208,7 +215,7 @@ function App() {
                 type="submit"
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
               >
-                Continue
+                {t('welcome.continue')}
               </button>
             </form>
           </div>
@@ -217,73 +224,73 @@ function App() {
       case 2:
         return (
           <div className="flex flex-col items-center space-y-4">
-            <h2 className="text-3xl font-bold text-purple-900">Hello, {userName}</h2>
-            <p className="text-xl text-purple-700">Tell me what's in your mind right now</p>
+            <h2 className="text-3xl font-bold text-purple-900">{t('thoughts.title', { name: userName })}</h2>
+            <p className="text-xl text-purple-700">{t('thoughts.subtitle')}</p>
             <form onSubmit={handleThoughtsSubmit} className="flex flex-col items-center space-y-4">
               <textarea
                 value={userThoughts}
                 onChange={(e) => setUserThoughts(e.target.value)}
                 className="w-96 h-32 text-lg p-4 border rounded-lg"
-                placeholder="Share your thoughts..."
+                placeholder={t('thoughts.placeholder')}
               />
               <button 
                 type="submit"
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
               >
-                Continue
+                {t('thoughts.continue')}
               </button>
             </form>
           </div>
         );
 
-        case 3:
-          return (
-            <div className="flex flex-col items-center space-y-4">
-              <h2 className="text-2xl font-bold text-purple-900 mb-4">Click to receive your guidance card</h2>
+      case 3:
+        return (
+          <div className="flex flex-col items-center space-y-4">
+            <h2 className="text-2xl font-bold text-purple-900 mb-4">{t('cardSelection.title')}</h2>
+            <div 
+              onClick={!isLoading ? handleCardSelect : undefined}
+              className="relative w-[300px] h-[450px] perspective-1000 cursor-pointer"
+            >
               <div 
-                onClick={!isLoading ? handleCardSelect : undefined}
-                className="relative w-[300px] h-[520px] perspective-1000 cursor-pointer"
+                className={`
+                  relative w-full h-full preserve-3d
+                  transition-all duration-700 ease-in-out
+                  ${selectedCard && !isLoading ? 'rotate-y-180' : ''}
+                  ${isLoading ? 'cursor-wait' : 'cursor-pointer'}
+                `}
               >
+                {/* Card Back */}
+                <div className="absolute w-full h-full backface-hidden">
+                  <img
+                    src="/images/tarot/card-back.jpg"
+                    alt="Tarot card back"
+                    className="w-full h-full object-cover rounded-lg shadow-lg"
+                  />
+                  {isLoading && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-lg gap-4">
+                      <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="text-white text-lg">{t('cardSelection.loading')}</div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Card Front */}
                 <div 
-                  className={`
-                    relative w-full h-full preserve-3d
-                    transition-all duration-700 ease-in-out
-                    ${selectedCard && !isLoading ? 'rotate-y-180' : ''}
-                    ${isLoading ? 'cursor-wait' : 'cursor-pointer'}
-                  `}
+                  className="absolute w-full h-full backface-hidden rotate-y-180"
+                  style={{ transform: 'rotateY(180deg)' }}
                 >
-                  {/* Card Back */}
-                  <div className="absolute w-full h-full backface-hidden">
+                  {selectedCard && (
                     <img
-                      src="/images/tarot/card-back.jpg"
-                      alt="Tarot card back"
+                      src={selectedCard.image}
+                      alt={selectedCard.altText}
                       className="w-full h-full object-cover rounded-lg shadow-lg"
                     />
-                    {isLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-lg gap-4">
-                        <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <div className="text-white text-lg">Receiving guidance...</div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Card Front */}
-                  <div 
-                    className="absolute w-full h-full backface-hidden rotate-y-180"
-                    style={{ transform: 'rotateY(180deg)' }}
-                  >
-                    {selectedCard && (
-                      <img
-                        src={selectedCard.image}
-                        alt={selectedCard.altText}
-                        className="w-full h-full object-cover rounded-lg shadow-lg"
-                      />
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
-          );
+          </div>
+        );
 
       case 4:
         return (
@@ -293,7 +300,7 @@ function App() {
               <img
                 src={selectedCard.image}
                 alt={selectedCard.altText}
-                className="w-[300px] h-[520px] object-cover rounded-lg shadow-lg mx-auto"
+                className="w-[300px] h-[450px] object-cover rounded-lg shadow-lg mx-auto"
               />
               <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow">
                 {renderInterpretation()}
@@ -305,12 +312,17 @@ function App() {
                 setUserName('');
                 setUserThoughts('');
                 setSelectedCard(null);
-                setInterpretation('');
+                setInterpretation({
+                  initialInsight: '',
+                  cardMessage: '',
+                  guidanceReflection: '',
+                  lookingForward: ''
+                });
                 setError('');
               }}
               className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg mt-8"
             >
-              Start Over
+              {t('reading.startOver')}
             </button>
           </div>
         );
@@ -322,11 +334,12 @@ function App() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 p-8">
+      <LanguageSelector />
       <div className="max-w-4xl w-full">
         {renderStep()}
         {error && (
           <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
-            {error}
+            {t(error)}
           </div>
         )}
       </div>
