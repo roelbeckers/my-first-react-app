@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@aws-sdk/client-bedrock": "^3.716.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.716.0",
+    "@aws-sdk/credential-provider-node": "^3.716.0",
+    "@aws-sdk/credential-providers": "^3.716.0",
     "aws-amplify": "^4.3.21-beta.8",
     "cra-template": "1.2.0",
     "react": "^19.0.0",
