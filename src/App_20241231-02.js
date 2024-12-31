@@ -7,17 +7,12 @@ function App() {
   const [userName, setUserName] = useState('');
   const [userThoughts, setUserThoughts] = useState('');
   const [selectedCard, setSelectedCard] = useState(null);
-  const [interpretation, setInterpretation] = useState({
-    initialInsight: '',
-    cardMessage: '',
-    guidanceReflection: '',
-    lookingForward: ''
-  });
+  const [interpretation, setInterpretation] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const selectPromptTemplate = (userThoughts, card) => {
-    /*const keywords = {
+    const keywords = {
       psychological: ['feel', 'think', 'anxiety', 'depression', 'worry', 'stress', 'emotion', 'mind', 'mental', 'relationship', 'family', 'personal'],
       spiritual: ['meaning', 'purpose', 'soul', 'spirit', 'divine', 'universe', 'path', 'guidance', 'meditation', 'energy', 'healing', 'inner'],
       practical: ['job', 'money', 'career', 'decision', 'relationship', 'choice', 'next steps', 'work', 'business', 'education', 'move', 'change']
@@ -33,57 +28,128 @@ function App() {
   
     // Select template based on highest keyword matches
     const highestMatch = Object.entries(matches)
-      .reduce((a, b) => b[1] > a[1] ? b : a)[0];*/
+      .reduce((a, b) => b[1] > a[1] ? b : a)[0];
   
-    // Base prompt template that ensures structured response
-    const basePrompt = `Act as a professional tarot card reader with years of experience in providing insightful and compassionate guidance. You're known for your ability to blend traditional tarot wisdom with practical advice.
+    const promptTemplates = {
+      // Primary template for standard readings
+      standard: `Act as a professional tarot card reader with years of experience in providing insightful and compassionate guidance. You're known for your ability to blend traditional tarot wisdom with practical advice.
+
+      Card Drawn: {{cardName}}
+      
+      Traditional Card Meaning:
+      {{cardDescription}}
+      
+      Keywords: {{keywords}}
+      
+      Seeker's Current Situation:
+      "{{userThoughts}}"
+      
+      Please provide a thorough interpretation that includes:
+      
+      1. Initial Insight (2-3 sentences):
+        - Acknowledge the seeker's current situation
+        - Create a bridge between their situation and the card's energy
+      
+      2. Card's Message (3-4 sentences):
+        - Explain how this specific card relates to their situation
+        - Highlight relevant aspects of the traditional meaning
+        - Connect the card's symbols to their current circumstances
+      
+      3. Guidance & Reflection (3-4 sentences):
+        - Offer practical insights and potential action steps
+        - Suggest questions for self-reflection
+        - Provide a positive perspective while acknowledging challenges
+      
+      4. Looking Forward (2-3 sentences):
+        - Share potential opportunities or areas of growth
+        - End with an empowering message
+      
+      Please maintain a warm, professional tone that balances empathy with practical wisdom. Avoid absolute predictions or dire warnings. Focus on empowerment and growth.`,
+      
+      psychological: `Act as a professional tarot reader with a background in psychological counseling. You understand that tarot cards can be powerful tools for self-reflection and personal growth.
+  
+  Context:
+  The seeker shared: "${userThoughts}"
   
   Card Drawn: ${card.name}
-  Traditional Card Meaning: ${card.description}
-  Keywords: ${card.keywords.join(', ')}
-  Seeker's Current Situation: "${userThoughts}"
+  Card's Traditional Meaning: ${card.description}
+  Card's Key Themes: ${card.keywords.join(', ')}
   
-  Please provide a thorough interpretation that includes:
-  
-  1. Initial Insight (2-3 sentences):
-  - Acknowledge the seeker's current situation
-  - Create a bridge between their situation and the card's energy
-  
-  2. Card's Message (3-4 sentences):
-  - Explain how this specific card relates to their situation
-  - Highlight relevant aspects of the traditional meaning
-  - Connect the card's symbols to their current circumstances
-  
-  3. Guidance & Reflection (3-4 sentences):
-  - Offer practical insights and potential action steps
-  - Suggest questions for self-reflection
-  - Provide a positive perspective while acknowledging challenges
-  
-  4. Looking Forward (2-3 sentences):
-  - Share potential opportunities or areas of growth
-  - End with an empowering message
-  
-  IMPORTANT: Structure your response in exactly 4 paragraphs, with each paragraph corresponding to the numbered sections above. Do not include the numbers or section titles in your response.`;
-  
-    return basePrompt;
-  };
+  Please provide an interpretation that explores:
 
-  const processInterpretation = (text) => {
-    // Split the response into paragraphs
-    const paragraphs = text.split('\n\n').filter(p => p.trim());
+1. Psychological Landscape:
+   - Connect the card's archetypal energy to the seeker's current mental state
+   - Identify underlying patterns or beliefs that may be influencing the situation
+
+2. Shadow & Light:
+   - Explore both challenging and supportive aspects of the card
+   - Highlight potential blind spots and areas for growth
+
+3. Integration & Growth:
+   - Suggest ways to incorporate the card's lessons
+   - Offer practical exercises for self-reflection
+
+4. Empowerment:
+   - Frame challenges as opportunities for growth
+   - Provide actionable steps for personal development`,
   
-    // Ensure we have exactly 4 paragraphs
-    if (paragraphs.length !== 4) {
-      console.warn('Response did not contain exactly 4 paragraphs');
-    }
+      spiritual: `You are a wise spiritual guide with deep knowledge of tarot symbolism. 
   
-    // Return structured interpretation
-    return {
-      initialInsight: paragraphs[0] || '',
-      cardMessage: paragraphs[1] || '',
-      guidanceReflection: paragraphs[2] || '',
-      lookingForward: paragraphs[3] || ''
+  Context:
+  The seeker shared: "${userThoughts}"
+  
+  Card Drawn: ${card.name}
+  Sacred Meaning: ${card.description}
+  Spiritual Aspects: ${card.keywords.join(', ')}
+  
+  Please provide spiritual guidance that includes:
+  1. The deeper spiritual message of this card for the seeker's journey
+  2. How this card connects to their soul's growth and purpose
+  3. Specific spiritual practices, meditations, or rituals that could help
+  4. Ways to connect with the card's energy and wisdom
+  5. Guidance for aligning with their higher path
+  
+  Maintain a gentle, wise tone while offering profound spiritual insights.`,
+  
+      practical: `You are a strategic tarot consultant focusing on practical guidance. 
+  
+  Context:
+  The seeker asked about: "${userThoughts}"
+  
+  Card Drawn: ${card.name}
+  Core Message: ${card.description}
+  Key Aspects: ${card.keywords.join(', ')}
+  
+  Please provide action-oriented guidance including:
+  1. A clear analysis of how this card relates to their practical situation
+  2. Specific, actionable steps they can take
+  3. Potential opportunities or challenges to be aware of
+  4. Resources or tools they might find helpful
+  5. Concrete next steps and milestones to work toward
+  
+  Keep the focus on practical, achievable solutions while maintaining a professional tone.`,
+  
+      standard: `You are an experienced tarot reader known for balanced and insightful guidance. 
+  
+  Context:
+  The seeker shared: "${userThoughts}"
+  
+  Card Drawn: ${card.name}
+  Traditional Meaning: ${card.description}
+  Key Elements: ${card.keywords.join(', ')}
+  
+  Please provide a well-rounded interpretation including:
+  1. How this card specifically relates to their situation
+  2. The main message or lesson the card brings
+  3. Practical guidance and suggestions
+  4. Questions for reflection
+  5. An empowering message about potential opportunities ahead
+  
+  Balance practical advice with spiritual wisdom while maintaining a warm, professional tone.`
     };
+  
+    //return promptTemplates[highestMatch] || promptTemplates.standard;
+    return promptTemplates.standard;
   };
   
   const getCardInterpretation = async (card, userThoughts) => {
@@ -118,8 +184,7 @@ function App() {
       const response = await client.send(command);
       
       const responseData = JSON.parse(new TextDecoder().decode(response.body));
-      const interpretation = processInterpretation(responseData.content[0].text);
-      return interpretation;
+      return responseData.content[0].text;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get card interpretation');
@@ -177,17 +242,6 @@ function App() {
       setIsLoading(false);
       setSelectedCard(null);
     }
-  };
-
-  const renderInterpretation = () => {
-    return (
-      <div className="space-y-4">
-        <p className="text-lg leading-relaxed">{interpretation.initialInsight}</p>
-        <p className="text-lg leading-relaxed">{interpretation.cardMessage}</p>
-        <p className="text-lg leading-relaxed">{interpretation.guidanceReflection}</p>
-        <p className="text-lg leading-relaxed">{interpretation.lookingForward}</p>
-      </div>
-    );
   };
 
   const renderStep = () => {
@@ -296,7 +350,7 @@ function App() {
                 className="w-[300px] h-[450px] object-cover rounded-lg shadow-lg mx-auto"
               />
               <div className="bg-white/90 backdrop-blur p-6 rounded-lg shadow">
-                {renderInterpretation()}
+                <p className="text-lg leading-relaxed">{interpretation}</p>
               </div>
             </div>
             <button 
