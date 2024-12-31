@@ -1,6 +1,141 @@
 import React, { useState } from 'react';
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import tarotCards from './tarotData';
+
+// Tarot card data
+const tarotCards = [
+  { 
+    id: 0, 
+    name: "The Fool", 
+    image: "/images/tarot/00-fool.jpg",
+    altText: "A young person stepping off a cliff, carrying a white rose and a small bag. A small dog accompanies them."
+  },
+  { 
+    id: 1, 
+    name: "The Magician", 
+    image: "/images/tarot/01-magician.jpg",
+    altText: "A figure standing at a table with the four suits of the tarot displayed, one hand pointing to heaven and one to earth."
+  },
+  { 
+    id: 2, 
+    name: "The High Priestess", 
+    image: "/images/tarot/02-priestess.jpg",
+    altText: "A female figure seated between two pillars, with a scroll and a crescent moon at her feet."
+  },
+  { 
+    id: 3, 
+    name: "The Empress", 
+    image: "/images/tarot/03-empress.jpg",
+    altText: "A female figure seated on a throne in a lush garden, wearing a crown of stars."
+  },
+  { 
+    id: 4, 
+    name: "The Emperor", 
+    image: "/images/tarot/04-emperor.jpg",
+    altText: "A male figure seated on a stone throne, holding an ankh scepter and wearing armor."
+  },
+  { 
+    id: 5, 
+    name: "The Hierophant", 
+    image: "/images/tarot/05-hierophant.jpg",
+    altText: "A religious figure seated between two pillars, with two acolytes at his feet."
+  },
+  { 
+    id: 6, 
+    name: "The Lovers", 
+    image: "/images/tarot/06-lovers.jpg",
+    altText: "A man and woman under an angel, with a tree behind each figure."
+  },
+  { 
+    id: 7, 
+    name: "The Chariot", 
+    image: "/images/tarot/07-chariot.jpg",
+    altText: "A figure in armor standing in a chariot drawn by two sphinxes."
+  },
+  { 
+    id: 8, 
+    name: "Strength", 
+    image: "/images/tarot/08-strength.jpg",
+    altText: "A woman gently closing the mouth of a lion, showing mastery through gentleness rather than force."
+  },
+  { 
+    id: 9, 
+    name: "The Hermit", 
+    image: "/images/tarot/09-hermit.jpg",
+    altText: "An elderly figure in a robe holding a lantern and staff."
+  },
+  { 
+    id: 10, 
+    name: "Wheel of Fortune", 
+    image: "/images/tarot/10-wheel.jpg",
+    altText: "A great wheel with various symbols and creatures around its edge."
+  },
+  { 
+    id: 11, 
+    name: "Justice", 
+    image: "/images/tarot/11-justice.jpg",
+    altText: "A crowned figure in red robes seated between two pillars, holding balanced scales in one hand and an upright sword in the other."
+  },
+  { 
+    id: 12, 
+    name: "The Hanged Man", 
+    image: "/images/tarot/12-hanged.jpg",
+    altText: "A figure suspended upside-down by one foot from a wooden beam."
+  },
+  { 
+    id: 13, 
+    name: "Death", 
+    image: "/images/tarot/13-death.jpg",
+    altText: "A skeletal figure on horseback carrying a black flag."
+  },
+  { 
+    id: 14, 
+    name: "Temperance", 
+    image: "/images/tarot/14-temperance.jpg",
+    altText: "An angel pouring liquid between two cups, with one foot on land and one in water."
+  },
+  { 
+    id: 15, 
+    name: "The Devil", 
+    image: "/images/tarot/15-devil.jpg",
+    altText: "A horned figure on a pedestal with two chained figures below."
+  },
+  { 
+    id: 16, 
+    name: "The Tower", 
+    image: "/images/tarot/16-tower.jpg",
+    altText: "A tower struck by lightning with figures falling from it."
+  },
+  { 
+    id: 17, 
+    name: "The Star", 
+    image: "/images/tarot/17-star.jpg",
+    altText: "A woman kneeling by water under a star-filled sky, pouring water from two vessels."
+  },
+  { 
+    id: 18, 
+    name: "The Moon", 
+    image: "/images/tarot/18-moon.jpg",
+    altText: "A full moon over a path between two towers, with a dog and wolf howling."
+  },
+  { 
+    id: 19, 
+    name: "The Sun", 
+    image: "/images/tarot/19-sun.jpg",
+    altText: "A child on a white horse under a radiant sun."
+  },
+  { 
+    id: 20, 
+    name: "Judgement", 
+    image: "/images/tarot/20-judgement.jpg",
+    altText: "An angel blowing a trumpet while figures rise from graves below."
+  },
+  { 
+    id: 21, 
+    name: "The World", 
+    image: "/images/tarot/21-world.jpg",
+    altText: "A dancing figure in a wreath, surrounded by four creatures in the corners."
+  }
+];
 
 function App() {
   const [step, setStep] = useState(1);
@@ -11,148 +146,7 @@ function App() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const selectPromptTemplate = (userThoughts, card) => {
-    const keywords = {
-      psychological: ['feel', 'think', 'anxiety', 'depression', 'worry', 'stress', 'emotion', 'mind', 'mental', 'relationship', 'family', 'personal'],
-      spiritual: ['meaning', 'purpose', 'soul', 'spirit', 'divine', 'universe', 'path', 'guidance', 'meditation', 'energy', 'healing', 'inner'],
-      practical: ['job', 'money', 'career', 'decision', 'relationship', 'choice', 'next steps', 'work', 'business', 'education', 'move', 'change']
-    };
-  
-    // Count keyword matches for each category
-    const matches = Object.entries(keywords).reduce((acc, [category, words]) => {
-      acc[category] = words.filter(word => 
-        userThoughts.toLowerCase().includes(word.toLowerCase())
-      ).length;
-      return acc;
-    }, {});
-  
-    // Select template based on highest keyword matches
-    const highestMatch = Object.entries(matches)
-      .reduce((a, b) => b[1] > a[1] ? b : a)[0];
-  
-    const promptTemplates = {
-      // Primary template for standard readings
-      standard: `Act as a professional tarot card reader with years of experience in providing insightful and compassionate guidance. You're known for your ability to blend traditional tarot wisdom with practical advice.
-
-      Card Drawn: {{cardName}}
-      
-      Traditional Card Meaning:
-      {{cardDescription}}
-      
-      Keywords: {{keywords}}
-      
-      Seeker's Current Situation:
-      "{{userThoughts}}"
-      
-      Please provide a thorough interpretation that includes:
-      
-      1. Initial Insight (2-3 sentences):
-        - Acknowledge the seeker's current situation
-        - Create a bridge between their situation and the card's energy
-      
-      2. Card's Message (3-4 sentences):
-        - Explain how this specific card relates to their situation
-        - Highlight relevant aspects of the traditional meaning
-        - Connect the card's symbols to their current circumstances
-      
-      3. Guidance & Reflection (3-4 sentences):
-        - Offer practical insights and potential action steps
-        - Suggest questions for self-reflection
-        - Provide a positive perspective while acknowledging challenges
-      
-      4. Looking Forward (2-3 sentences):
-        - Share potential opportunities or areas of growth
-        - End with an empowering message
-      
-      Please maintain a warm, professional tone that balances empathy with practical wisdom. Avoid absolute predictions or dire warnings. Focus on empowerment and growth.`,
-      
-      psychological: `Act as a professional tarot reader with a background in psychological counseling. You understand that tarot cards can be powerful tools for self-reflection and personal growth.
-  
-  Context:
-  The seeker shared: "${userThoughts}"
-  
-  Card Drawn: ${card.name}
-  Card's Traditional Meaning: ${card.description}
-  Card's Key Themes: ${card.keywords.join(', ')}
-  
-  Please provide an interpretation that explores:
-
-1. Psychological Landscape:
-   - Connect the card's archetypal energy to the seeker's current mental state
-   - Identify underlying patterns or beliefs that may be influencing the situation
-
-2. Shadow & Light:
-   - Explore both challenging and supportive aspects of the card
-   - Highlight potential blind spots and areas for growth
-
-3. Integration & Growth:
-   - Suggest ways to incorporate the card's lessons
-   - Offer practical exercises for self-reflection
-
-4. Empowerment:
-   - Frame challenges as opportunities for growth
-   - Provide actionable steps for personal development`,
-  
-      spiritual: `You are a wise spiritual guide with deep knowledge of tarot symbolism. 
-  
-  Context:
-  The seeker shared: "${userThoughts}"
-  
-  Card Drawn: ${card.name}
-  Sacred Meaning: ${card.description}
-  Spiritual Aspects: ${card.keywords.join(', ')}
-  
-  Please provide spiritual guidance that includes:
-  1. The deeper spiritual message of this card for the seeker's journey
-  2. How this card connects to their soul's growth and purpose
-  3. Specific spiritual practices, meditations, or rituals that could help
-  4. Ways to connect with the card's energy and wisdom
-  5. Guidance for aligning with their higher path
-  
-  Maintain a gentle, wise tone while offering profound spiritual insights.`,
-  
-      practical: `You are a strategic tarot consultant focusing on practical guidance. 
-  
-  Context:
-  The seeker asked about: "${userThoughts}"
-  
-  Card Drawn: ${card.name}
-  Core Message: ${card.description}
-  Key Aspects: ${card.keywords.join(', ')}
-  
-  Please provide action-oriented guidance including:
-  1. A clear analysis of how this card relates to their practical situation
-  2. Specific, actionable steps they can take
-  3. Potential opportunities or challenges to be aware of
-  4. Resources or tools they might find helpful
-  5. Concrete next steps and milestones to work toward
-  
-  Keep the focus on practical, achievable solutions while maintaining a professional tone.`,
-  
-      standard: `You are an experienced tarot reader known for balanced and insightful guidance. 
-  
-  Context:
-  The seeker shared: "${userThoughts}"
-  
-  Card Drawn: ${card.name}
-  Traditional Meaning: ${card.description}
-  Key Elements: ${card.keywords.join(', ')}
-  
-  Please provide a well-rounded interpretation including:
-  1. How this card specifically relates to their situation
-  2. The main message or lesson the card brings
-  3. Practical guidance and suggestions
-  4. Questions for reflection
-  5. An empowering message about potential opportunities ahead
-  
-  Balance practical advice with spiritual wisdom while maintaining a warm, professional tone.`
-    };
-  
-    //return promptTemplates[highestMatch] || promptTemplates.standard;
-    return promptTemplates.standard;
-  };
-  
-  const getCardInterpretation = async (card, userThoughts) => {
+  const getCardInterpretation = async (cardName, userThoughts) => {
     try {
       const client = new BedrockRuntimeClient({ 
         region: process.env.REACT_APP_AWS_REGION,
@@ -161,9 +155,7 @@ function App() {
           secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY
         }
       });
-  
-      const prompt = selectPromptTemplate(userThoughts, card);
-  
+
       const input = {
         modelId: "anthropic.claude-3-haiku-20240307-v1:0",
         contentType: "application/json",
@@ -174,12 +166,12 @@ function App() {
           messages: [
             {
               role: "user",
-              content: prompt
+              content: `Based on the thought "${userThoughts}", provide an interpretation for the Tarot card "${cardName}". Include both the traditional meaning of the card and how it relates to the specific situation.`
             }
           ]
         })
       };
-  
+
       const command = new InvokeModelCommand(input);
       const response = await client.send(command);
       
@@ -223,7 +215,7 @@ function App() {
       setSelectedCard(randomCard);
   
       // Get the interpretation
-      const cardInterpretation = await getCardInterpretation(randomCard, userThoughts);
+      const cardInterpretation = await getCardInterpretation(randomCard.name, userThoughts);
       setInterpretation(cardInterpretation);
   
       // Wait for a moment to show the loading state
