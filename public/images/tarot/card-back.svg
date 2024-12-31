@@ -1,0 +1,19 @@
+<svg viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#9F7AEA" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="#4C1D95"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  
+  <rect x="10" y="10" width="280" height="430" stroke="#9F7AEA" fill="none" stroke-width="2"/>
+  <rect x="20" y="20" width="260" height="410" stroke="#9F7AEA" fill="none" stroke-width="1"/>
+  
+  <circle cx="150" cy="225" r="60" fill="none" stroke="#9F7AEA" stroke-width="2"/>
+  <path d="M150 165 L150 285 M90 225 L210 225" stroke="#9F7AEA" stroke-width="2"/>
+  
+  <text x="150" y="50" font-family="serif" font-size="20" fill="#9F7AEA" text-anchor="middle">TAROT</text>
+  <text x="150" y="420" font-family="serif" font-size="20" fill="#9F7AEA" text-anchor="middle">GUIDANCE</text>
+</svg>

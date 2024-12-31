@@ -7,8 +7,10 @@
     "@aws-sdk/client-bedrock-runtime": "^3.716.0",
     "@aws-sdk/credential-provider-node": "^3.716.0",
     "@aws-sdk/credential-providers": "^3.716.0",
+    "@radix-ui/react-alert-dialog": "^1.1.4",
     "aws-amplify": "^4.3.21-beta.8",
     "cra-template": "1.2.0",
+    "lucide-react": "^0.469.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1"
@@ -36,5 +38,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }
